@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodSaver — Sign In</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-brand">
+      <a href="index.html" class="login-logo">
+        <div class="nav-logo-mark">
+          <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round"><path d="M12 2C8 2 4 6 4 10c0 6 8 12 8 12s8-6 8-12c0-4-4-8-8-8z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        </div>
+        <span class="login-title">FoodSaver</span>
+      </a>
+    </div>
+
+    <div class="tab-switch" id="tab-switch">
+      <button class="tab-btn active" id="tab-in" onclick="switchTab('in')">Sign in</button>
+      <button class="tab-btn" id="tab-up" onclick="switchTab('up')">Create account</button>
+    </div>
+
+    <!-- Sign in -->
+    <div id="panel-in">
+      <h2 class="login-heading">Welcome back</h2>
+      <p class="login-sub">Sign in to claim food or manage your listings.</p>
+
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="si-email" placeholder="you@example.com" autocomplete="email">
+        <div class="feedback" id="si-email-err">Please enter a valid email.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="si-pass" placeholder="••••••••" autocomplete="current-password">
+        <div class="feedback" id="si-pass-err">Password is required.</div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:-8px;margin-bottom:1rem">
+        <a href="#" style="font-size:12px;color:var(--green-600);text-decoration:none">Forgot password?</a>
+      </div>
+      <button class="btn btn-green" style="width:100%;justify-content:center;padding:11px" onclick="signIn()">Sign in</button>
+      <div class="feedback" id="si-fb"></div>
+    </div>
+
+    <!-- Sign up -->
+    <div id="panel-up" style="display:none">
+      <h2 class="login-heading">Get started</h2>
+      <p class="login-sub">Join to rescue food or list your surplus.</p>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First name</label>
+          <input class="form-input" type="text" id="su-fname" placeholder="Arjun" autocomplete="given-name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last name</label>
+          <input class="form-input" type="text" id="su-lname" placeholder="Sharma" autocomplete="family-name">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="su-email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">I am a</label>
+        <select class="form-select" id="su-role">
+          <option value="individual">Individual</option>
+          <option value="ngo">NGO / Charity</option>
+          <option value="restaurant">Restaurant / Business</option>
+          <option value="volunteer">Volunteer</option>
+        </select>
+      </div>
+      <div class="form-group" id="org-group" style="display:none">
+        <label class="form-label">Organisation name</label>
+        <input class="form-input" type="text" id="su-org" placeholder="e.g. Feeding Vijayawada">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone (optional)</label>
+        <input class="form-input" type="tel" id="su-phone" placeholder="+91 ···" autocomplete="tel">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="su-pass" placeholder="Min. 8 characters" autocomplete="new-password">
+        <div class="form-hint">At least 8 characters</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:1.25rem;font-size:13px;color:var(--text-3)">
+        <input type="checkbox" id="su-terms" style="margin-top:3px;accent-color:var(--green-600)">
+        <label for="su-terms">I agree to the <a href="#" style="color:var(--green-600)">Terms of Service</a> and <a href="#" style="color:var(--green-600)">Privacy Policy</a></label>
+      </div>
+      <button class="btn btn-green" style="width:100%;justify-content:center;padding:11px" onclick="signUp()">Create account</button>
+      <div class="feedback" id="su-fb"></div>
+    </div>
+
+    <div class="login-footer">
+      <a href="index.html">← Back to home</a>
+    <span style="display:block;margin-top:.5rem;font-size:12px;color:var(--text-3);">&copy; 2026 Developed by <strong>Hafeeza Shaik</strong></span>
+    </div>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+redirectIfLoggedIn();
+
+document.getElementById('su-role').addEventListener('change', function() {
+  document.getElementById('org-group').style.display = (this.value === 'ngo' || this.value === 'restaurant') ? 'block' : 'none';
+});
+
+function switchTab(t) {
+  document.getElementById('panel-in').style.display = t === 'in' ? 'block' : 'none';
+  document.getElementById('panel-up').style.display = t === 'up' ? 'block' : 'none';
+  document.getElementById('tab-in').classList.toggle('active', t === 'in');
+  document.getElementById('tab-up').classList.toggle('active', t === 'up');
+}
+
+function signIn() {
+  const email = document.getElementById('si-email').value.trim();
+  const pass  = document.getElementById('si-pass').value;
+  const fb = document.getElementById('si-fb');
+  if (!email || !/\S+@\S+\.\S+/.test(email)) { showFb('si-email-err', 'error', 'Valid email required.'); return; }
+  if (!pass) { showFb('si-pass-err', 'error', 'Password required.'); return; }
+
+  const users = JSON.parse(localStorage.getItem('fs_users') || '[]');
+  const user = users.find(u => u.email === email && u.pass === pass);
+  if (user) {
+    DB.set('session', { email: user.email, name: user.name, role: user.role, phone: user.phone || '', org: user.org || '' });
+    fb.className = 'feedback success'; fb.textContent = 'Welcome back, ' + user.name.split(' ')[0] + '! Redirecting…'; fb.style.display = 'block';
+    setTimeout(() => window.location.href = 'pages/browse.html', 700);
+  } else {
+    fb.className = 'feedback error'; fb.textContent = 'Incorrect email or password.'; fb.style.display = 'block';
+  }
+}
+
+function signUp() {
+  const fname = document.getElementById('su-fname').value.trim();
+  const lname = document.getElementById('su-lname').value.trim();
+  const email = document.getElementById('su-email').value.trim();
+  const pass  = document.getElementById('su-pass').value;
+  const role  = document.getElementById('su-role').value;
+  const phone = document.getElementById('su-phone').value.trim();
+  const org   = document.getElementById('su-org').value.trim();
+  const terms = document.getElementById('su-terms').checked;
+  const fb = document.getElementById('su-fb');
+
+  if (!fname) { fb.className = 'feedback error'; fb.textContent = 'First name required.'; fb.style.display = 'block'; return; }
+  if (!email || !/\S+@\S+\.\S+/.test(email)) { fb.className = 'feedback error'; fb.textContent = 'Valid email required.'; fb.style.display = 'block'; return; }
+  if (!pass || pass.length < 8) { fb.className = 'feedback error'; fb.textContent = 'Password must be at least 8 characters.'; fb.style.display = 'block'; return; }
+  if (!terms) { fb.className = 'feedback error'; fb.textContent = 'Please accept the Terms of Service.'; fb.style.display = 'block'; return; }
+
+  const users = JSON.parse(localStorage.getItem('fs_users') || '[]');
+  if (users.find(u => u.email === email)) { fb.className = 'feedback error'; fb.textContent = 'An account with this email already exists.'; fb.style.display = 'block'; return; }
+
+  const fullName = fname + (lname ? ' ' + lname : '');
+  users.push({ email, pass, name: fullName, role, phone, org });
+  localStorage.setItem('fs_users', JSON.stringify(users));
+
+  fb.className = 'feedback success'; fb.textContent = 'Account created! Please sign in.'; fb.style.display = 'block';
+  setTimeout(() => { switchTab('in'); document.getElementById('si-email').value = email; fb.style.display = 'none'; }, 1500);
+}
+
+function showFb(id, cls, msg) {
+  const el = document.getElementById(id);
+  el.className = 'feedback ' + cls; el.textContent = msg; el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+</script>
+</body>
+</html>

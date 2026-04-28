@@ -1,0 +1,5 @@
+node_modules/
+foodsaver.db
+.env
+*.db-shm
+*.db-wal

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodSaver — My Profile</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.activity-row { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 0.5px solid var(--border); }
+.activity-row:last-child { border-bottom: none; }
+.activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-400); margin-top: 5px; flex-shrink: 0; }
+.activity-dot.claimed { background: var(--green-600); }
+.activity-dot.posted { background: var(--amber-400); }
+.toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 0.5px solid var(--border); }
+.toggle-row:last-child { border-bottom: none; }
+.toggle-label { font-size: 14px; font-weight: 500; }
+.toggle-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.toggle { position: relative; display: inline-block; width: 44px; height: 24px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--gray-300); border-radius: 24px; transition: background .2s; }
+.toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.toggle input:checked + .toggle-slider { background: var(--green-600); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+.settings-section { margin-bottom: 1.5rem; }
+.settings-section-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); margin-bottom: .75rem; }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="../index.html" class="nav-logo">
+    <div class="nav-logo-mark">
+      <svg viewBox="0 0 24 24"><path d="M12 2C8 2 4 6 4 10c0 6 8 12 8 12s8-6 8-12c0-4-4-8-8-8z"/><circle cx="12" cy="10" r="2.5"/></svg>
+    </div>
+    <span class="nav-logo-text">FoodSaver</span>
+  </a>
+  <div class="nav-links">
+    <a href="browse.html">Browse food</a>
+    <a href="upload.html">List food</a>
+    <a href="profile.html" class="active">Profile</a>
+  </div>
+  <div class="nav-right">
+    <button class="btn btn-outline btn-sm" onclick="logout()">Sign out</button>
+    <a href="profile.html" class="nav-avatar" id="nav-avatar" title="Profile">?</a>
+  </div>
+</nav>
+
+<div class="page-wrap" id="guest-notice" style="display:none">
+  <div class="empty-state">
+    <div class="empty-state-icon">🔒</div>
+    <div class="empty-state-title">Sign in to view your profile</div>
+    <div class="empty-state-sub" style="margin-bottom:1.5rem">Track your claimed food, posted listings, and account details.</div>
+    <a href="../login.html" class="btn btn-green">Sign in</a>
+  </div>
+</div>
+
+<div class="page-wrap" id="profile-content">
+  <!-- Hero -->
+  <div class="profile-hero">
+    <div class="profile-avatar-lg" id="av-lg">?</div>
+    <div>
+      <div class="profile-name" id="prof-name">Loading…</div>
+      <div class="profile-meta" id="prof-meta">—</div>
+      <div class="profile-stats">
+        <div class="profile-stat">
+          <strong id="stat-claimed">0</strong>
+          <span>Meals claimed</span>
+        </div>
+        <div class="profile-stat">
+          <strong id="stat-posted">0</strong>
+          <span>Listings posted</span>
+        </div>
+        <div class="profile-stat">
+          <strong id="stat-impact">0 kg</strong>
+          <span>Food rescued</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-left:auto">
+      <span class="badge badge-green" id="role-badge">Member</span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="profile-tabs">
+    <button class="profile-tab active" onclick="switchTab('activity')">Activity</button>
+    <button class="profile-tab" onclick="switchTab('contact')">Contact & Details</button>
+    <button class="profile-tab" onclick="switchTab('listings')">My Listings</button>
+    <button class="profile-tab" onclick="switchTab('settings')">Settings</button>
+  </div>
+
+  <!-- Activity tab -->
+  <div class="tab-content active" id="tab-activity">
+    <div class="card" style="padding:1.5rem;margin-bottom:1rem">
+      <div style="font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.05em">Recent activity</div>
+      <div id="activity-list">
+        <div style="text-align:center;padding:2rem;color:var(--text-3);font-size:13px">No activity yet. <a href="browse.html" style="color:var(--green-600)">Claim your first listing →</a></div>
+      </div>
+    </div>
+
+    <!-- Impact card -->
+    <div class="card" style="padding:1.5rem;background:var(--green-50);border-color:var(--green-100)">
+      <div style="font-size:13px;font-weight:600;color:var(--green-800);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.05em">Your impact</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--green-100);border:0.5px solid var(--green-100);border-radius:var(--radius);overflow:hidden">
+        <div style="background:var(--green-50);padding:1rem;text-align:center">
+          <div style="font-family:var(--font-display);font-size:22px;color:var(--green-600)" id="imp-meals">0</div>
+          <div style="font-size:11px;color:var(--green-700);margin-top:2px">Meals rescued</div>
+        </div>
+        <div style="background:var(--green-50);padding:1rem;text-align:center">
+          <div style="font-family:var(--font-display);font-size:22px;color:var(--green-600)" id="imp-co2">0 kg</div>
+          <div style="font-size:11px;color:var(--green-700);margin-top:2px">CO₂ saved</div>
+        </div>
+        <div style="background:var(--green-50);padding:1rem;text-align:center">
+          <div style="font-family:var(--font-display);font-size:22px;color:var(--green-600)" id="imp-water">0 L</div>
+          <div style="font-size:11px;color:var(--green-700);margin-top:2px">Water saved</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact tab -->
+  <div class="tab-content" id="tab-contact">
+    <div class="card" style="padding:1.75rem;max-width:560px">
+      <div style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:1rem">Personal information</div>
+      <div class="form-group">
+        <label class="form-label">Full name</label>
+        <input class="form-input" type="text" id="edit-name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email address</label>
+        <input class="form-input" type="email" id="edit-email" readonly style="background:var(--cream-100);color:var(--text-3)">
+        <div class="form-hint">Email cannot be changed after signup</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone number</label>
+        <input class="form-input" type="tel" id="edit-phone" placeholder="+91 ···">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Role</label>
+        <select class="form-select" id="edit-role">
+          <option value="individual">Individual</option>
+          <option value="ngo">NGO / Charity</option>
+          <option value="restaurant">Restaurant / Business</option>
+          <option value="volunteer">Volunteer</option>
+        </select>
+      </div>
+      <div class="form-group" id="org-row">
+        <label class="form-label">Organisation / Restaurant name</label>
+        <input class="form-input" type="text" id="edit-org" placeholder="e.g. Feeding Vijayawada">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Area / City</label>
+        <input class="form-input" type="text" id="edit-city" placeholder="e.g. Vijayawada, Andhra Pradesh">
+      </div>
+      <button class="btn btn-green" onclick="saveContact()">Save changes</button>
+      <div class="feedback" id="contact-fb"></div>
+    </div>
+  </div>
+
+  <!-- My Listings tab -->
+  <div class="tab-content" id="tab-listings">
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:1.25rem 1.5rem;border-bottom:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:14px;font-weight:500">Posted listings</span>
+        <a href="upload.html" class="btn btn-green btn-sm">+ New listing</a>
+      </div>
+      <div id="my-listings-content">
+        <div class="empty-state">
+          <div class="empty-state-icon">📋</div>
+          <div class="empty-state-title">No listings yet</div>
+          <div class="empty-state-sub" style="margin-bottom:1.25rem">Have surplus food? Post a listing in minutes.</div>
+          <a href="upload.html" class="btn btn-green btn-sm">Post listing</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings tab -->
+  <div class="tab-content" id="tab-settings">
+    <div class="card" style="padding:1.75rem;max-width:560px">
+      <div class="settings-section">
+        <div class="settings-section-title">Notifications</div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">New food near me</div><div class="toggle-sub">Get alerted when listings appear within 2 km</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Expiry reminders</div><div class="toggle-sub">Remind me 30 min before claimed food expires</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Weekly impact summary</div><div class="toggle-sub">A weekly email of your food rescue stats</div></div>
+          <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Privacy</div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Show my name on claims</div><div class="toggle-sub">Restaurants can see who claimed their food</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Include me in impact stats</div><div class="toggle-sub">Your data contributes to anonymised totals</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Account</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" onclick="logout()">Sign out</button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDelete()">Delete account</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../assets/app.js"></script>
+<script>
+const session = getSession();
+
+if (!session) {
+  document.getElementById('guest-notice').style.display = 'block';
+  document.getElementById('profile-content').style.display = 'none';
+} else {
+  // Populate hero
+  document.getElementById('av-lg').textContent = getInitials(session.name);
+  document.getElementById('prof-name').textContent = session.name;
+  document.getElementById('prof-meta').textContent =
+    (session.org ? session.org + ' · ' : '') +
+    (session.role ? session.role.charAt(0).toUpperCase() + session.role.slice(1) : 'Member') +
+    (session.phone ? ' · ' + session.phone : '');
+
+  const roleLabels = { individual: 'Individual', ngo: 'NGO', restaurant: 'Restaurant', volunteer: 'Volunteer' };
+  document.getElementById('role-badge').textContent = roleLabels[session.role] || 'Member';
+
+  // Stats from localStorage
+  const claimed = DB.get('claimed') || [];
+  const myListings = DB.get('my_listings') || [];
+  const totalClaimed = claimed.length;
+  const totalPosted = myListings.length;
+  const kgRescued = totalClaimed * 0.6 + totalPosted * 1.2;
+
+  document.getElementById('stat-claimed').textContent = totalClaimed;
+  document.getElementById('stat-posted').textContent = totalPosted;
+  document.getElementById('stat-impact').textContent = kgRescued.toFixed(1) + ' kg';
+  document.getElementById('imp-meals').textContent = totalClaimed;
+  document.getElementById('imp-co2').textContent = (totalClaimed * 0.4).toFixed(1) + ' kg';
+  document.getElementById('imp-water').textContent = (totalClaimed * 220).toFixed(0) + ' L';
+
+  // Activity
+  const activities = [];
+  claimed.forEach(id => {
+    const l = getListings().find(x => x.id === id);
+    if (l) activities.push({ type: 'claimed', text: 'Claimed food from ' + l.restaurant, food: l.food, time: 'Recently' });
+  });
+  myListings.forEach(l => {
+    activities.push({ type: 'posted', text: 'Posted listing: ' + l.food, food: l.qty + ' ' + l.unit + ' · ' + l.restaurant, time: new Date(l.postedAt).toLocaleDateString('en-GB', { day:'numeric', month:'short' }) });
+  });
+
+  if (activities.length) {
+    document.getElementById('activity-list').innerHTML = activities.slice(0, 10).map(a => `
+      <div class="activity-row">
+        <div class="activity-dot ${a.type}"></div>
+        <div>
+          <div style="font-size:13.5px;font-weight:500">${a.text}</div>
+          <div style="font-size:12px;color:var(--text-3);margin-top:2px">${a.food} · ${a.time}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Contact tab prefill
+  document.getElementById('edit-name').value = session.name || '';
+  document.getElementById('edit-email').value = session.email || '';
+  document.getElementById('edit-phone').value = session.phone || '';
+  document.getElementById('edit-city').value = session.city || '';
+  document.getElementById('edit-org').value = session.org || '';
+  if (session.role) document.getElementById('edit-role').value = session.role;
+  document.getElementById('org-row').style.display = (session.role === 'ngo' || session.role === 'restaurant') ? 'block' : 'none';
+  document.getElementById('edit-role').addEventListener('change', function() {
+    document.getElementById('org-row').style.display = (this.value === 'ngo' || this.value === 'restaurant') ? 'block' : 'none';
+  });
+
+  // My Listings tab
+  if (myListings.length > 0) {
+    document.getElementById('my-listings-content').innerHTML = `
+      <table class="data-table">
+        <thead><tr><th>Food</th><th>Restaurant</th><th>Qty</th><th>Posted</th></tr></thead>
+        <tbody>
+          ${myListings.map(l => `
+            <tr>
+              <td><span style="font-weight:500">${l.food}</span></td>
+              <td style="color:var(--text-3)">${l.restaurant || '—'}</td>
+              <td>${l.qty} ${l.unit}</td>
+              <td>${new Date(l.postedAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+}
+
+function switchTab(t) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.profile-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + t).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function saveContact() {
+  const updated = {
+    ...session,
+    name: document.getElementById('edit-name').value.trim(),
+    phone: document.getElementById('edit-phone').value.trim(),
+    role: document.getElementById('edit-role').value,
+    org: document.getElementById('edit-org').value.trim(),
+    city: document.getElementById('edit-city').value.trim(),
+  };
+  DB.set('session', updated);
+  // Update in users store
+  const users = JSON.parse(localStorage.getItem('fs_users') || '[]');
+  const idx = users.findIndex(u => u.email === updated.email);
+  if (idx >= 0) { users[idx] = { ...users[idx], ...updated }; localStorage.setItem('fs_users', JSON.stringify(users)); }
+  const fb = document.getElementById('contact-fb');
+  fb.className = 'feedback success'; fb.textContent = 'Changes saved successfully.'; fb.style.display = 'block';
+  setTimeout(() => { fb.style.display = 'none'; location.reload(); }, 1200);
+}
+
+function confirmDelete() {
+  if (confirm('Delete your account? This cannot be undone.')) {
+    DB.del('session'); DB.del('claimed'); DB.del('my_listings');
+    window.location.href = '../index.html';
+  }
+}
+</script>
+  <div style="text-align:center;font-size:12px;color:var(--text-3);padding:1.5rem 1rem;">
+    </body>copy; 2026 FoodSaver. All rights reserved. Developed by <strong>Hafeeza Shaik</strong>.
+  </div>
+</body>
+</html>
